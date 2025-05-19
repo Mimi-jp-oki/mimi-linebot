@@ -1,0 +1,67 @@
+const userStates = {}; // ユーザーごとの状態保存
+
+const stressQuestions = [
+  "最近、気分が晴れないことが多いですか？",
+  "職場でイライラすることが多いですか？",
+  "体のだるさを感じることが多いですか？",
+  "寝つきが悪い、または途中で目が覚めますか？",
+  "周囲からのサポート（上司・同僚）を感じられますか？",
+  "自分の仕事がうまくいっていると感じますか？",
+  "不安感が強いと感じることはありますか？",
+  "疲労が蓄積していると感じますか？",
+  "今の仕事に満足していますか？",
+  "相談できる相手がいますか？"
+];
+if (!userStates[userId]) {
+  // 初回ユーザー用
+  userStates[userId] = { step: 0, score: 0, inProgress: false };
+}
+
+// ユーザーが「ストレスチェックをしたい」と言ったら開始
+if (event.message.text.includes("ストレスチェック")) {
+  userStates[userId].step = 0;
+  userStates[userId].score = 0;
+  userStates[userId].inProgress = true;
+
+  return client.replyMessage(event.replyToken, {
+    type: 'text',
+    text: `Q1: ${stressQuestions[0]}（はい／いいえ）`
+  });
+}
+
+// 回答中のユーザー処理
+if (userStates[userId].inProgress) {
+  const step = userStates[userId].step;
+  const answer = event.message.text;
+
+  // 「はい」の場合1点
+  if (answer.includes("はい")) {
+    userStates[userId].score += 1;
+  }
+
+  userStates[userId].step += 1;
+
+  if (userStates[userId].step < stressQuestions.length) {
+    const nextQuestion = stressQuestions[userStates[userId].step];
+    return client.replyMessage(event.replyToken, {
+      type: 'text',
+      text: `Q${userStates[userId].step + 1}: ${nextQuestion}（はい／いいえ）`
+    });
+  } else {
+    // 終了時：スコアを判定
+    const score = userStates[userId].score;
+    let result = "";
+
+    if (score <= 2) result = "ストレス度：低（良好な状態です！）";
+    else if (score <= 5) result = "ストレス度：中（少し疲れが見られます）";
+    else result = "ストレス度：高（高ストレス状態。ケアが必要です）";
+
+    // 状態リセット
+    userStates[userId] = { step: 0, score: 0, inProgress: false };
+
+    return client.replyMessage(event.replyToken, {
+      type: 'text',
+      text: `ストレスチェックが完了しました！\nあなたのスコア：${score}点\n${result}`
+    });
+  }
+}
