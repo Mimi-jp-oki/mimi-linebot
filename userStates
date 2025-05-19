@@ -1,3 +1,6 @@
+git add .
+git commit -m "ストレスチェック追加"
+git push origin main
 const userStates = {}; // ユーザーごとの状態保存
 
 const stressQuestions = [
