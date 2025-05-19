@@ -23,6 +23,25 @@ function handleEvent(event) {
     text: replyText,
   });
 }
+function handleEvent(event) {
+  if (event.type !== 'message' || event.message.type !== 'text') {
+    return Promise.resolve(null);
+  }
+
+  const userMessage = event.message.text;
+
+  if (userMessage.includes('ストレスチェック')) {
+    return client.replyMessage(event.replyToken, {
+      type: 'text',
+      text: 'ストレスチェックを始めます。\nQ1: 「最近気分が落ち込むことが多かったですか？」（はい／いいえ）',
+    });
+  }
+
+  return client.replyMessage(event.replyToken, {
+    type: 'text',
+    text: 'こんにちは、Mimiです。あなたの健康を一緒に考えます😊',
+  });
+}
 
 const client = new line.Client(config);
 const port = process.env.PORT || 3000;
